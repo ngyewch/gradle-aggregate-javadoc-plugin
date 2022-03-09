@@ -39,7 +39,7 @@ repositories {
 gradlePlugin {
     plugins {
         create("gradle-aggregate-javadoc-plugin") {
-            id = "com.github.ngyewch.aggregate-javadoc"
+            id = "io.github.ngyewch.aggregate-javadoc"
             displayName = "Gradle Aggregate Javadoc plugin"
             description = "Gradle Aggregate Javadoc plugin."
             implementationClass = "com.github.ngyewch.gradle.AggregateJavadocPlugin"
