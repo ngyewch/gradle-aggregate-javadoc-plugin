@@ -9,7 +9,7 @@ plugins {
     id("se.ascp.gradle.gradle-versions-filter") version "0.1.10"
 }
 
-group = "com.github.ngyewch.gradle"
+group = "io.github.ngyewch.gradle"
 version = "0.0.0-SNAPSHOT"
 gitVersioning.apply {
     refs {
