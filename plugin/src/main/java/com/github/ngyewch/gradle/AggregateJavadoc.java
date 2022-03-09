@@ -8,6 +8,7 @@ import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.plugins.JavaPluginExtension;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskProvider;
+import org.gradle.api.tasks.compile.JavaCompile;
 import org.gradle.api.tasks.javadoc.Javadoc;
 import org.gradle.external.javadoc.StandardJavadocDocletOptions;
 
@@ -102,11 +103,14 @@ public class AggregateJavadoc {
       aggregateClasspath.from(clientPlugin.getJavadocClasspath());
 
       aggregateJavadoc.configure(aj -> {
-        SourceSet main = subproject.getExtensions().getByType(JavaPluginExtension.class).getSourceSets()
+        final SourceSet main = subproject.getExtensions().getByType(JavaPluginExtension.class).getSourceSets()
             .getByName("main");
-        Javadoc javadoc = subproject.getTasks().named(main.getJavadocTaskName(), Javadoc.class).get();
+        final Javadoc javadoc = subproject.getTasks().named(main.getJavadocTaskName(), Javadoc.class).get();
 
-        aj.source(javadoc.getSource());
+        aj.dependsOn(String.format(":%s:compileJava", subproject.getName()));
+
+        final JavaCompile javaCompile = (JavaCompile) subproject.getTasks().getByName(main.getCompileJavaTaskName());
+        aj.source(javaCompile.getSource());
 
         StandardJavadocDocletOptions options = (StandardJavadocDocletOptions) javadoc.getOptions();
         StandardJavadocDocletOptions aggregateOptions = (StandardJavadocDocletOptions) aj.getOptions();
