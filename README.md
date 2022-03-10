@@ -31,10 +31,15 @@ allprojects {
 }
 
 configure<AggregateJavadocPluginExtension> {
+    excludeProjects.addAll(
+        project(":some-internal-module"),
+        project(":another-internal-module"),
+    )
     useJavadocIo.set(true)
     excludeLinksForDependencies.set(
         mutableListOf(
             "com.google.code.gson:gson",
+            "somedomain.somegroup:*",
         )
     )
 
