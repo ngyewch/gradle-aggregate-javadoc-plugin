@@ -20,6 +20,7 @@ public class AggregateJavadoc {
   private final Project project;
   private final ConfigurableFileCollection aggregateClasspath;
   private final TaskProvider<Javadoc> aggregateJavadoc;
+  private final List<Project> excludeProjects;
   private final boolean useJavadocIo;
   private final List<String> excludeLinksForDependencies;
   private final Set<Project> handledProjects = new HashSet<>();
@@ -29,6 +30,7 @@ public class AggregateJavadoc {
     super();
 
     this.project = project;
+    this.excludeProjects = extension.getExcludeProjects().getOrElse(new ArrayList<>());
     this.useJavadocIo = extension.getUseJavadocIo().getOrElse(false);
     this.excludeLinksForDependencies = extension.getExcludeLinksForDependencies().getOrElse(new ArrayList<>());
 
@@ -67,24 +69,18 @@ public class AggregateJavadoc {
   }
 
   private void handleSubproject(Project subproject) {
+    if (excludeProjects.contains(subproject)) {
+      return;
+    }
     if (handledProjects.contains(subproject)) {
       return;
     }
     handledProjects.add(subproject);
 
+    final List<Dependency> dependencies = getDependencies(subproject,"implementation", "api", "compileOnly");
+
     final List<String> links = new ArrayList<>();
     if (useJavadocIo) {
-      final List<Dependency> dependencies = new ArrayList<>();
-      try {
-        dependencies.addAll(subproject.getConfigurations().getByName("implementation").getDependencies());
-      } catch (UnknownConfigurationException e) {
-        // ignore exception
-      }
-      try {
-        dependencies.addAll(subproject.getConfigurations().getByName("api").getDependencies());
-      } catch (UnknownConfigurationException e) {
-        // ignore exception
-      }
       dependencies.forEach(dependency -> {
         if (dependency instanceof ExternalModuleDependency) {
           final ExternalModuleDependency externalModuleDependency = (ExternalModuleDependency) dependency;
@@ -123,7 +119,7 @@ public class AggregateJavadoc {
     });
 
     try {
-      subproject.getConfigurations().getByName("implementation").getDependencies().forEach(dependency -> {
+      dependencies.forEach(dependency -> {
         if (dependency instanceof ProjectDependency) {
           final ProjectDependency projectDependency = (ProjectDependency) dependency;
           handleSubproject(projectDependency.getDependencyProject());
@@ -132,6 +128,18 @@ public class AggregateJavadoc {
     } catch (UnknownConfigurationException e) {
       // ignore exception
     }
+  }
+
+  private static List<Dependency> getDependencies(Project project, String... configurationNames) {
+    final List<Dependency> dependencies = new ArrayList<>();
+    for (final String configurationName : configurationNames) {
+      try {
+        dependencies.addAll(project.getConfigurations().getByName(configurationName).getDependencies());
+      } catch (UnknownConfigurationException e) {
+        // ignore exception
+      }
+    }
+    return dependencies;
   }
 
   private static <T> void addAll(List<T> list, List<T> newElements) {

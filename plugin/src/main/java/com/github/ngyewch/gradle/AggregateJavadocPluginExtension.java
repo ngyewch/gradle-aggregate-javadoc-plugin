@@ -1,6 +1,7 @@
 package com.github.ngyewch.gradle;
 
 import org.gradle.api.Action;
+import org.gradle.api.Project;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
@@ -14,6 +15,8 @@ public abstract class AggregateJavadocPluginExtension {
   private final ObjectFactory objectFactory;
 
   private final List<AggregateJavadocSetOptions> setOptions = new ArrayList<>();
+
+  public abstract ListProperty<Project> getExcludeProjects();
 
   public abstract Property<Boolean> getUseJavadocIo();
 
